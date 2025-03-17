@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View, Text } from 'react-native'; // Ensure safe rendering
+import { View } from 'react-native'; // Ensure safe rendering
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -32,7 +32,7 @@ export default function RootLayout() {
   return (
     <EquipmentProvider> {/* Wrap the entire app with EquipmentProvider */}
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={{ flex: 1 }}> {/* Ensure no raw text is rendered */}
+        <View style={{ flex: 1 }}> 
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

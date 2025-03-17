@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchExercises, Exercise } from '../api/exerciseApi';
 
 // Define Equipment Type
 export interface Equipment {
@@ -12,6 +13,8 @@ export interface Equipment {
 interface EquipmentContextType {
   equipmentList: Equipment[];
   addEquipment: (item: Equipment) => void;
+  removeEquipment: (id: string) => void; 
+  exercises: Record<string, Exercise[]>;
 }
 
 // Create Context
@@ -20,14 +23,32 @@ const EquipmentContext = createContext<EquipmentContextType | undefined>(undefin
 // Provider Component
 export const EquipmentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
+  const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
 
   useEffect(() => {
-    // Load saved equipment from AsyncStorage
-    (async () => {
+    async function loadEquipment() {
       const storedEquipment = await AsyncStorage.getItem('equipmentList');
-      if (storedEquipment) setEquipmentList(JSON.parse(storedEquipment));
-    })();
+      if (storedEquipment) {
+        setEquipmentList(JSON.parse(storedEquipment));
+      }
+    }
+    loadEquipment();
   }, []);
+
+  // Fetch exercises when equipment list changes
+  useEffect(() => {
+    async function loadExercises() {
+      let exercisesData: Record<string, Exercise[]> = {};
+      for (const equipment of equipmentList) {
+        exercisesData[equipment.name] = await fetchExercises(equipment.name);
+      }
+      setExercises(exercisesData);
+    }
+
+    if (equipmentList.length > 0) {
+      loadExercises();
+    }
+  }, [equipmentList]);
 
   const addEquipment = async (item: Equipment) => {
     const newList = [...equipmentList, item];
@@ -35,11 +56,15 @@ export const EquipmentProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     await AsyncStorage.setItem('equipmentList', JSON.stringify(newList));
   };
 
+  const removeEquipment = async (id: string) => {
+    const newList = equipmentList.filter((item) => item.id !== id);
+    setEquipmentList(newList);
+    await AsyncStorage.setItem('equipmentList', JSON.stringify(newList));
+  };
+
   return (
-    <EquipmentContext.Provider value={{ equipmentList, addEquipment }}>
-      <View style={{ flex: 1 }}>
-        {typeof children === 'string' ? <Text>{children}</Text> : children} {/* ✅ Wraps text safely */}
-      </View>
+    <EquipmentContext.Provider value={{ equipmentList, addEquipment, removeEquipment, exercises }}>
+      <View style={{ flex: 1 }}>{children}</View>
     </EquipmentContext.Provider>
   );
 };
@@ -52,3 +77,5 @@ export const useEquipmentContext = () => {
   }
   return context;
 };
+
+export default EquipmentProvider; // ✅ Ensure default export is present

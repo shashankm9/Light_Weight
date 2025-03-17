@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEquipmentContext } from '../context/EquipmentContext';
 
 export default function EquipmentListScreen() {
-  const { equipmentList } = useEquipmentContext();
+  const { equipmentList, exercises, removeEquipment } = useEquipmentContext();
   const router = useRouter();
 
   return (
@@ -15,13 +15,34 @@ export default function EquipmentListScreen() {
         data={equipmentList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.equipmentItem}
-            onPress={() => router.push(`/equipment/${item.id}`)}
-          >
-            <Image source={{ uri: item.imageUri }} style={styles.equipmentImage} />
-            <Text style={styles.equipmentName}>{item.name}</Text>
-          </TouchableOpacity>
+          <View style={styles.equipmentItem}>
+            <TouchableOpacity onPress={() => router.push(`/equipment/${encodeURIComponent(item.id)}`)}>
+              <Image source={{ uri: item.imageUri }} style={styles.equipmentImage} />
+              <Text style={styles.equipmentName}>{item.name}</Text>
+            </TouchableOpacity>
+
+            {/* Display Exercises for Each Equipment */}
+            {exercises[item.name] && exercises[item.name].length > 0 ? (
+              <View style={styles.exerciseList}>
+                <Text style={styles.exerciseTitle}>Exercises:</Text>
+                {exercises[item.name].map((exercise) => (
+                  <Text key={exercise.name} style={styles.exerciseItem}>
+                    • {exercise.name} ({exercise.muscle})
+                  </Text>
+                ))}
+              </View>
+            ) : (
+              <Text style={{ color: "gray", fontStyle: "italic", padding: 10 }}>
+                No exercises found for this equipment.
+              </Text>
+            )}
+
+
+            {/* Remove Equipment Button */}
+            <TouchableOpacity style={styles.removeButton} onPress={() => removeEquipment(item.id)}>
+              <Text style={styles.removeButtonText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>No equipment added yet.</Text>}
         ListFooterComponent={(
@@ -53,8 +74,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   equipmentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
     backgroundColor: '#FFF',
     padding: 10,
     marginBottom: 10,
@@ -70,6 +90,29 @@ const styles = StyleSheet.create({
   equipmentName: {
     fontSize: 18,
     fontWeight: '500',
+  },
+  exerciseList: {
+    marginTop: 10,
+  },
+  exerciseTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  exerciseItem: {
+    fontSize: 14,
+    marginLeft: 10,
+  },
+  removeButton: {
+    backgroundColor: '#FF3B30',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   addButton: {
     backgroundColor: '#1D3D47',
