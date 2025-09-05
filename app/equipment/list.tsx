@@ -1,10 +1,28 @@
-import { View, FlatList, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, FlatList, Image, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEquipmentContext } from '../context/EquipmentContext';
 
 export default function EquipmentListScreen() {
   const { equipmentList, exercises, removeEquipment } = useEquipmentContext();
   const router = useRouter();
+
+  const handleRemoveEquipment = (equipmentId: string, equipmentName: string) => {
+    Alert.alert(
+      "Remove Equipment",
+      `Are you sure you want to remove "${equipmentName}" from your equipment list?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => removeEquipment(equipmentId)
+        }
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -39,7 +57,7 @@ export default function EquipmentListScreen() {
 
 
             {/* Remove Equipment Button */}
-            <TouchableOpacity style={styles.removeButton} onPress={() => removeEquipment(item.id)}>
+            <TouchableOpacity style={styles.removeButton} onPress={() => handleRemoveEquipment(item.id, item.name)}>
               <Text style={styles.removeButtonText}>Remove</Text>
             </TouchableOpacity>
           </View>
