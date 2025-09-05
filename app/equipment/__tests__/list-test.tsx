@@ -58,8 +58,12 @@ describe('EquipmentListScreen', () => {
       back: jest.fn(),
       replace: jest.fn(),
       canGoBack: jest.fn(),
-      setParams: jest.fn()
-    });
+      setParams: jest.fn(),
+      navigate: jest.fn(),
+      dismiss: jest.fn(),
+      dismissTo: jest.fn(),
+      dismissAll: jest.fn()
+    } as any);
 
     jest.clearAllMocks();
   });
